@@ -2,22 +2,13 @@
 {
     public class Aluno
     {
-        public int id;
-        public string nome;
-        public DateTime dataNascimento = new DateTime();
-        public char sexo;
-        public Turma turma;
-        public int totalFaltas;
+        public int Id { get; set; }
+        public string Nome { get; set; }
+        public DateTime DataNascimento { get; set; }
+        public char Sexo { get; set; }
+        public int totalFaltas { get; set; }
+        public Turma Turma { get; set; }
 
-        public Aluno(int id, string nome, DateTime dataNascimento, char sexo, Turma turma, int totalFaltas)
-        {
-            this.id = id;
-            this.nome = nome;
-            this.dataNascimento = dataNascimento;
-            this.sexo = sexo;
-            this.turma = turma;
-            this.totalFaltas = totalFaltas;
-        }
         public void consultarTodasOsAlunos()
         {
 

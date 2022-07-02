@@ -2,18 +2,10 @@
 {
     public class Turma
     {
-        public int id;
-        public string nome;
-        public bool ativo;
+        public int Id { get; set; }
+        public string Nome { get; set; }
+        public bool Ativo { get; set; }
 
-        public int Id { get { return id; } set { id = value; } }
-        public string Nome { get { return nome; } set { nome = value; } }
-        public bool Ativo { get { return ativo; } set { ativo = value; } }
-
-        public Turma()
-        {
-
-        }
         public void consultarTodasAsTurmas()
         {
 

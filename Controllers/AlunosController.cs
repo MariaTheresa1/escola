@@ -3,124 +3,120 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using escola.Models;
 
 namespace escola.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("swagger/[controller]")]
     [ApiController]
     public class AlunosController : ControllerBase
     {
-        private readonly AlunoContext _context;
+        private readonly EscolaContext _context;
 
-        public AlunosController(AlunoContext context)
+        public AlunosController(EscolaContext context)
         {
             _context = context;
         }
 
-        // GET: api/Alunos
+        // GET: swagger/Alunos/
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Aluno>>> GetAlunos()
         {
-          if (_context.Alunos == null)
-          {
-              return NotFound();
-          }
+            if (_context.Alunos == null || _context.Alunos.Count() == 0)
+            {
+                return NotFound("Não há nenhum aluno cadastrado.");
+            }
             return await _context.Alunos.ToListAsync();
         }
 
-        // GET: api/Alunos/5
+        // GET: swagger/Alunos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Aluno>> GetAluno(int id)
         {
-          if (_context.Alunos == null)
-          {
-              return NotFound();
-          }
+
+            if (_context.Alunos == null || _context.Alunos.Count() == 0)
+            {
+                return NotFound("Não há nenhum aluno cadastrado.");
+            }
             var aluno = await _context.Alunos.FindAsync(id);
 
             if (aluno == null)
             {
-                return NotFound();
+                return NotFound($"A busca não retornou resultados para o aluno de ID: {id}.");
             }
 
             return aluno;
         }
 
-        // PUT: api/Alunos/5
+        // POST: swagger/Alunos
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAluno(int id, Aluno aluno)
+        [HttpPost]
+        public JsonResult PostAluno()
         {
-            if (id != aluno.Id)
+            var alunoExemplo = new
             {
-                return BadRequest();
-            }
+                mensagem = "A rota para adicionar um aluno é swagger/aluno/add",
+                formato = new
+                {
+                    Nome = "Nome Exemplo",
+                    Apelido = "Apelido Exemplo - Pode ser omitido",
+                    EmailPrincipal = "exemplo@domain.com",
+                    Sexo = "Enviar uma das seguintes letras: F - Feminino, M - Masculino, 0 - Outros, N - Não Informado",
+                    DataNascimento = "Enviar no formado: YYYY-MM-DD (Ano com 4 dígitos, mês com dois dígitos, dia com um dígito)"
+                }
+            };
 
-            _context.Entry(aluno).State = EntityState.Modified;
+            return new JsonResult(alunoExemplo);
+        }
+
+        [HttpPost("add")]
+        public async Task<ActionResult<Aluno>> PostAluno(Aluno aluno)
+        {
+            var listErrors = new List<string>();
+            string response = "";
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AlunoExists(id))
+                if (_context.Alunos == null)
                 {
-                    return NotFound();
+                    if (aluno.Nome == string.Empty)
+                        listErrors.Add("O nome para o aluno está ausente!");
+
+                    response = JsonSerializer.Serialize(listErrors);
+                }
+                else if (!AlunoExists(aluno))
+                {
+                    _context.Alunos.Add(aluno);
+                    await _context.SaveChangesAsync();
+                    response = JsonSerializer.Serialize(aluno);
                 }
                 else
                 {
-                    throw;
+                    response = "Este aluno já está na escola!";
                 }
             }
-
-            return NoContent();
-        }
-
-        // POST: api/Alunos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Aluno>> PostAluno(Aluno aluno)
-        {
-          if (_context.Alunos == null)
-          {
-              return Problem("Entity set 'AlunoContext.Alunos'  is null.");
-          }
-            _context.Alunos.Add(aluno);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetAluno", new { id = aluno.Id }, aluno);
-        }
-
-        // DELETE: api/Alunos/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAluno(int id)
-        {
-            if (_context.Alunos == null)
+            catch (Exception ex)
             {
-                return NotFound();
-            }
-            var aluno = await _context.Alunos.FindAsync(id);
-            if (aluno == null)
-            {
-                return NotFound();
+                response = JsonSerializer.Serialize(ex.Message);
             }
 
-            _context.Alunos.Remove(aluno);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return CreatedAtAction(nameof(GetAluno), new { id = aluno.Id }, response);
         }
 
         private bool AlunoExists(int id)
         {
             return (_context.Alunos?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+        private bool AlunoExists(Aluno aluno)
+        {
+            return _context.Alunos.Any(c => c.Nome == aluno.Nome
+            && c.DataNascimento == aluno.DataNascimento);
+        }
 
-        // PUT: api/escola/Alunos/5
+        // PUT: swagger/Alunos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut]
         public async Task<IActionResult> PutAluno(Aluno aluno)
@@ -149,6 +145,27 @@ namespace escola.Controllers
             }
 
             return Ok("Alteração realizada com sucesso!");
-        }        
+        }
+
+        // DELETE: swagger/Alunos/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAluno(int id)
+        {
+            if (_context.Alunos == null)
+            {
+                return NotFound("Não há nenhum aluno cadastrado");
+            }
+            var aluno = await _context.Alunos.FindAsync(id);
+
+            if (aluno == null)
+            {
+                return NotFound($"O id: {id} não existe na base de dados.");
+            }
+
+            _context.Alunos.Remove(aluno);
+            await _context.SaveChangesAsync();
+
+            return Ok("O registro foi removido com sucesso!");
+        }
     }
 }

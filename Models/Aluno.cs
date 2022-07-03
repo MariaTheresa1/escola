@@ -7,6 +7,7 @@
         public DateTime DataNascimento { get; set; }
         public char Sexo { get; set; }
         public int TotalFaltas { get; set; }
+        public int TurmaId { get; set; }
         public Turma Turma { get; set; }
 
         public void consultarTodasOsAlunos()

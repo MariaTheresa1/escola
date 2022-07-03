@@ -10,7 +10,7 @@ using escola.Models;
 
 namespace escola.Controllers
 {
-    [Route("api/escola/[controller]")]
+    [Route("swagger/[controller]")]
     [ApiController]
     public class TurmasController : ControllerBase
     {
@@ -21,25 +21,25 @@ namespace escola.Controllers
             _context = context;
         }
 
-        // GET: api/escola/Turmas/
+        // GET: swagger/Turmas/
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Turma>>> GetTurmas()
         {
             if (_context.Turmas == null || _context.Turmas.Count() == 0)
             {
-                return NotFound("Não há nenhum turma cadastrado.");
+                return NotFound("Não há nenhuma turma cadastrada.");
             }
             return await _context.Turmas.ToListAsync();
         }
 
-        // GET: api/escola/Turmas/5
+        // GET: swagger/Turmas/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Turma>> GetTurma(int id)
         {
 
             if (_context.Turmas == null || _context.Turmas.Count() == 0)
             {
-                return NotFound("Não há nenhum turma cadastrado.");
+                return NotFound("Não há nenhuma turma cadastrada.");
             }
             var turma = await _context.Turmas.FindAsync(id);
 
@@ -51,18 +51,18 @@ namespace escola.Controllers
             return turma;
         }
 
-        // POST: api/escola/Turmas
+        // POST: swagger/Turmas
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public JsonResult PostTurma()
         {
             var turmaExemplo = new
             {
-                mensagem = "A rota para adicionar um turma é api/escola/turma/add",
+                mensagem = "A rota para adicionar um turma é swagger/turma/add",
                 formato = new
                 {
                     Nome = "Nome Exemplo",
-                    Ativo = "1 ou 0, sim ou não"
+                    Ativo = "0 ou 1 - true ou false"                    
                 }
             };
 
@@ -80,7 +80,7 @@ namespace escola.Controllers
                 if (_context.Turmas == null)
                 {
                     if (turma.Nome == string.Empty)
-                        listErrors.Add("O nome para o turma está ausente!");
+                        listErrors.Add("O nome para a turma está ausente!");
 
                     response = JsonSerializer.Serialize(listErrors);
                 }
@@ -108,7 +108,7 @@ namespace escola.Controllers
             return (_context.Turmas?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
-        // PUT: api/escola/Turmas/5
+        // PUT: swagger/Turmas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut]
         public async Task<IActionResult> PutTurma(Turma turma)
@@ -139,13 +139,13 @@ namespace escola.Controllers
             return Ok("Alteração realizada com sucesso!");
         }
 
-        // DELETE: api/escola/Turmas/5
+        // DELETE: swagger/Turmas/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTurma(int id)
         {
             if (_context.Turmas == null)
             {
-                return NotFound("Não há nenhum turma cadastrado");
+                return NotFound("Não há nenhuma turma cadastrada");
             }
             var turma = await _context.Turmas.FindAsync(id);
 

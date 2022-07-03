@@ -7,15 +7,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddDbContext<AlunoContext>(opt => opt.UseInMemoryDatabase("Agenda"));
-builder.Services.AddDbContext<TurmaContext>(opt => opt.UseInMemoryDatabase("Agenda"));
+//builder.Services.AddDbContext<AlunoContext>(opt => opt.UseInMemoryDatabase("Escola"));
+//builder.Services.AddDbContext<TurmaContext>(opt => opt.UseInMemoryDatabase("Escola"));
+builder.Services.AddDbContext<AlunoContext>(opt => opt.UseSqlServer(@"Server=MARIATHERESA\SQLEXPRESS;Database=escola;User_Id=root2;Password=12345678"));
+builder.Services.AddDbContext<EscolaContext>(opt => opt.UseSqlServer(@"Server=MARIATHERESA\SQLEXPRESS;Database=escola;User_Id=root2;Password=12345678"));
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

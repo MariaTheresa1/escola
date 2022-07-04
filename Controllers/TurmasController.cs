@@ -26,7 +26,7 @@ namespace escola.Controllers
         public async Task<JsonResult> GetTurmas()
         {
             if (_context.Turmas == null || _context.Turmas.Count() == 0)
-                return new JsonResult("Não há nenhum contato cadastrado.");
+                return new JsonResult("Não há nenhuma turma cadastrado.");
 
             var turmas = await _context.Turmas.ToListAsync();
 
@@ -80,24 +80,31 @@ namespace escola.Controllers
             var listErrors = new List<string>();
             string response = "";
 
+            if (_context.Turmas == null)
+                return Ok("Nenhuma turma foi informada!");
+
             try
             {
-                if (_context.Turmas == null)
+                if (_context.Turmas != null)
                 {
                     if (turma.Nome == string.Empty)
                         listErrors.Add("O nome para a turma está ausente!");
 
                     response = JsonSerializer.Serialize(listErrors);
-                }
-                else if (!TurmaExists(turma.Id))
-                {
-                    _context.Turmas.Add(turma);
-                    await _context.SaveChangesAsync();
-                    response = JsonSerializer.Serialize(turma);
-                }
-                else
-                {
-                    response = "Este turma já está na escola!";
+
+                    if (listErrors.Count <= 0)
+                    {
+                        if (!TurmaExists(turma.Id))
+                        {
+                            _context.Turmas.Add(turma);
+                            await _context.SaveChangesAsync();
+                            response = JsonSerializer.Serialize(turma);
+                        }
+                        else
+                        {
+                            response = "Esta turma já está na escola!";
+                        }
+                    }
                 }
             }
             catch (Exception ex)

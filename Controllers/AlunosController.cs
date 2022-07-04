@@ -26,7 +26,7 @@ namespace escola.Controllers
         public async Task<JsonResult> GetAlunos()
         {
             if (_context.Alunos == null || _context.Alunos.Count() == 0)
-                return new JsonResult("Não há nenhum contato cadastrado.");
+                return new JsonResult("Não há nenhum aluno cadastrado.");
 
             var alunos = await _context.Alunos.ToListAsync();
 
@@ -83,24 +83,31 @@ namespace escola.Controllers
             var listErrors = new List<string>();
             string response = "";
 
+            if (_context.Alunos == null)
+                return Ok("Nenhum aluno foi informado!");
+
             try
             {
-                if (_context.Alunos == null)
+                if (_context.Alunos != null)
                 {
                     if (aluno.Nome == string.Empty)
                         listErrors.Add("O nome para o aluno está ausente!");
-
+                                       
                     response = JsonSerializer.Serialize(listErrors);
-                }
-                else if (!AlunoExists(aluno))
-                {
-                    _context.Alunos.Add(aluno);
-                    await _context.SaveChangesAsync();
-                    response = JsonSerializer.Serialize(aluno);
-                }
-                else
-                {
-                    response = "Este aluno já está na escola!";
+
+                    if (listErrors.Count <= 0)
+                    {
+                        if (!AlunoExists(aluno))
+                        {
+                            _context.Alunos.Add(aluno);
+                            await _context.SaveChangesAsync();
+                            response = JsonSerializer.Serialize(aluno);
+                        }
+                        else
+                        {
+                            response = "Este aluno já está na escola!";
+                        }
+                    }
                 }
             }
             catch (Exception ex)

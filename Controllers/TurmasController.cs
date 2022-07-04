@@ -23,13 +23,18 @@ namespace escola.Controllers
 
         // GET: swagger/Turmas/
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Turma>>> GetTurmas()
+        public async Task<JsonResult> GetTurmas()
         {
             if (_context.Turmas == null || _context.Turmas.Count() == 0)
+                return new JsonResult("Não há nenhum contato cadastrado.");
+
+            var turmas = await _context.Turmas.ToListAsync();
+
+            return new JsonResult(new
             {
-                return NotFound("Não há nenhuma turma cadastrada.");
-            }
-            return await _context.Turmas.ToListAsync();
+                total = turmas.Count,
+                turmas = turmas
+            });
         }
 
         // GET: swagger/Turmas/5

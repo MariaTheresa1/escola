@@ -23,13 +23,18 @@ namespace escola.Controllers
 
         // GET: swagger/Alunos/
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Aluno>>> GetAlunos()
+        public async Task<JsonResult> GetAlunos()
         {
             if (_context.Alunos == null || _context.Alunos.Count() == 0)
+                return new JsonResult("Não há nenhum contato cadastrado.");
+
+            var alunos = await _context.Alunos.ToListAsync();
+
+            return new JsonResult(new
             {
-                return NotFound("Não há nenhum aluno cadastrado.");
-            }
-            return await _context.Alunos.ToListAsync();
+                total = alunos.Count,
+                alunos = alunos
+            });
         }
 
         // GET: swagger/Alunos/5

@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using escola.Models;
 
 namespace escola.Controllers
 {
-    [Route("swagger/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class TurmasController : ControllerBase
     {
@@ -21,113 +20,43 @@ namespace escola.Controllers
             _context = context;
         }
 
-        // GET: swagger/Turmas/
+        // GET: api/Turmas
         [HttpGet]
-        public async Task<JsonResult> GetTurmas()
+        public async Task<ActionResult<IEnumerable<Turma>>> GetTurmas()
         {
-            if (_context.Turmas == null || _context.Turmas.Count() == 0)
-                return new JsonResult("Não há nenhuma turma cadastrado.");
-
-            var turmas = await _context.Turmas.ToListAsync();
-
-            return new JsonResult(new
-            {
-                total = turmas.Count,
-                turmas = turmas
-            });
+          if (_context.Turmas == null)
+          {
+              return NotFound();
+          }
+            return await _context.Turmas.ToListAsync();
         }
 
-        // GET: swagger/Turmas/5
+        // GET: api/Turmas/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Turma>> GetTurma(int id)
         {
-
-            if (_context.Turmas == null || _context.Turmas.Count() == 0)
-            {
-                return NotFound("Não há nenhuma turma cadastrada.");
-            }
+          if (_context.Turmas == null)
+          {
+              return NotFound();
+          }
             var turma = await _context.Turmas.FindAsync(id);
 
             if (turma == null)
             {
-                return NotFound($"A busca não retornou resultados para o turma de ID: {id}.");
+                return NotFound();
             }
 
             return turma;
         }
 
-        // POST: swagger/Turmas
+        // PUT: api/Turmas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public JsonResult PostTurma()
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutTurma(int id, Turma turma)
         {
-            var turmaExemplo = new
+            if (id != turma.Id)
             {
-                mensagem = "A rota para adicionar um turma é swagger/turma/add",
-                formato = new
-                {
-                    Nome = "Nome Exemplo",
-                    Ativo = "0 ou 1 - true ou false"                    
-                }
-            };
-
-            return new JsonResult(turmaExemplo);
-        }
-
-        [HttpPost("add")]
-        public async Task<ActionResult<Turma>> PostTurma(Turma turma)
-        {
-            var listErrors = new List<string>();
-            string response = "";
-
-            if (_context.Turmas == null)
-                return Ok("Nenhuma turma foi informada!");
-
-            try
-            {
-                if (_context.Turmas != null)
-                {
-                    if (turma.Nome == string.Empty)
-                        listErrors.Add("O nome para a turma está ausente!");
-
-                    response = JsonSerializer.Serialize(listErrors);
-
-                    if (listErrors.Count <= 0)
-                    {
-                        if (!TurmaExists(turma.Id))
-                        {
-                            _context.Turmas.Add(turma);
-                            await _context.SaveChangesAsync();
-                            response = JsonSerializer.Serialize(turma);
-                        }
-                        else
-                        {
-                            response = "Esta turma já está na escola!";
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                response = JsonSerializer.Serialize(ex.Message);
-            }
-
-            return CreatedAtAction(nameof(GetTurma), new { id = turma.Id }, response);
-        }
-
-        private bool TurmaExists(int id)
-        {
-            return (_context.Turmas?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-
-        // PUT: swagger/Turmas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut]
-        public async Task<IActionResult> PutTurma(Turma turma)
-        {
-            if (turma.Id <= 0)
-            {
-                return BadRequest("Nenhum id informado para alteração");
+                return BadRequest();
             }
 
             _context.Entry(turma).State = EntityState.Modified;
@@ -138,7 +67,7 @@ namespace escola.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!TurmaExists(turma.Id))
+                if (!TurmaExists(id))
                 {
                     return NotFound();
                 }
@@ -148,28 +77,47 @@ namespace escola.Controllers
                 }
             }
 
-            return Ok("Alteração realizada com sucesso!");
+            return NoContent();
         }
 
-        // DELETE: swagger/Turmas/5
+        // POST: api/Turmas
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<Turma>> PostTurma(Turma turma)
+        {
+          if (_context.Turmas == null)
+          {
+              return Problem("Entity set 'EscolaContext.Turmas'  is null.");
+          }
+            _context.Turmas.Add(turma);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetTurma", new { id = turma.Id }, turma);
+        }
+
+        // DELETE: api/Turmas/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTurma(int id)
         {
             if (_context.Turmas == null)
             {
-                return NotFound("Não há nenhuma turma cadastrada");
+                return NotFound();
             }
             var turma = await _context.Turmas.FindAsync(id);
-
             if (turma == null)
             {
-                return NotFound($"O id: {id} não existe na base de dados.");
+                return NotFound();
             }
 
             _context.Turmas.Remove(turma);
             await _context.SaveChangesAsync();
 
-            return Ok("O registro foi removido com sucesso!");
+            return NoContent();
+        }
+
+        private bool TurmaExists(int id)
+        {
+            return (_context.Turmas?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

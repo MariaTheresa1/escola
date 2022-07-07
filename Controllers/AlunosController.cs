@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using escola.Models;
+using System.Text.Json;
 
 namespace escola.Controllers
 {
@@ -24,10 +25,10 @@ namespace escola.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Aluno>>> GetAlunos()
         {
-          if (_context.Alunos == null)
-          {
-              return NotFound();
-          }
+            if (_context.Alunos == null)
+            {
+                return NotFound();
+            }
             return await _context.Alunos.ToListAsync();
         }
 
@@ -35,10 +36,10 @@ namespace escola.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Aluno>> GetAluno(int id)
         {
-          if (_context.Alunos == null)
-          {
-              return NotFound();
-          }
+            if (_context.Alunos == null)
+            {
+                return NotFound();
+            }
             var aluno = await _context.Alunos.FindAsync(id);
 
             if (aluno == null)
@@ -85,14 +86,42 @@ namespace escola.Controllers
         [HttpPost]
         public async Task<ActionResult<Aluno>> PostAluno(Aluno aluno)
         {
-          if (_context.Alunos == null)
-          {
-              return Problem("Entity set 'EscolaContext.Alunos'  is null.");
-          }
-            _context.Alunos.Add(aluno);
-            await _context.SaveChangesAsync();
+            var listErrors = new List<string>(); 
+            string response = ""; 
+            if (_context.Alunos == null)
+            {
+                return Problem("Nenhum aluno foi informado.");
+            }
+            try 
+            {
+                if (_context.Alunos != null)
+                {
+                    if (aluno.TurmaId == 0)
+                        listErrors.Add("Um aluno nao pode ser incluido sem uma turma.");
 
-            return CreatedAtAction("GetAluno", new { id = aluno.Id }, aluno);
+                    response = JsonSerializer.Serialize(listErrors);
+
+                    if (listErrors.Count <= 0)
+                    {
+                        if (!AlunoExists(aluno.Id))
+                        {
+                            _context.Alunos.Add(aluno);
+                            await _context.SaveChangesAsync();
+                            response = JsonSerializer.Serialize(aluno);
+                        }
+                        else
+                        {
+                            response = "Esse aluno já foi cadastrado.";
+                        }
+                    }
+                }
+            } 
+            catch (Exception ex) 
+            {
+                response = JsonSerializer.Serialize(ex.Message);
+            } 
+
+            return CreatedAtAction(nameof(GetAluno), new { id = aluno.Id }, response);
         }
 
         // DELETE: api/Alunos/5

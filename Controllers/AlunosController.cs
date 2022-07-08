@@ -29,7 +29,18 @@ namespace escola.Controllers
             {
                 return NotFound();
             }
-            return await _context.Alunos.ToListAsync();
+            var alunos = await _context.Alunos.ToListAsync();
+            List<Aluno> alunosAtivos = new List<Aluno>();
+
+            foreach (var aluno in alunos)
+            {
+                var turma = await _context.Turmas.FindAsync(aluno.TurmaId);
+                if (turma.Ativo == true)
+                {
+                    alunosAtivos.Add(new Aluno { Id = aluno.Id, Nome = aluno.Nome, DataNascimento = aluno.DataNascimento, Sexo = aluno.Sexo, TotalFaltas = aluno.TotalFaltas, TurmaId = aluno.TurmaId });                
+                }
+            }
+            return alunosAtivos;
         }
 
         // GET: api/Alunos/5
@@ -86,17 +97,17 @@ namespace escola.Controllers
         [HttpPost]
         public async Task<ActionResult<Aluno>> PostAluno(Aluno aluno)
         {
-            var listErrors = new List<string>(); 
-            string response = ""; 
+            var listErrors = new List<string>();
+            string response = "";
             if (_context.Alunos == null)
             {
                 return Problem("Nenhum aluno foi informado.");
             }
-            try 
+            try
             {
                 if (_context.Alunos != null)
                 {
-                    if (aluno.TurmaId == 0)
+                    if (aluno.TurmaId == 0 || aluno.TurmaId == null)
                         listErrors.Add("Um aluno nao pode ser incluido sem uma turma.");
 
                     response = JsonSerializer.Serialize(listErrors);
@@ -115,11 +126,11 @@ namespace escola.Controllers
                         }
                     }
                 }
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 response = JsonSerializer.Serialize(ex.Message);
-            } 
+            }
 
             return CreatedAtAction(nameof(GetAluno), new { id = aluno.Id }, response);
         }

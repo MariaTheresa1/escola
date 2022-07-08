@@ -27,7 +27,7 @@ namespace escola.Controllers
           if (_context.Turmas == null)
           {
               return NotFound();
-          }
+          }          
             return await _context.Turmas.ToListAsync();
         }
 
@@ -104,15 +104,20 @@ namespace escola.Controllers
                 return NotFound();
             }
             var turma = await _context.Turmas.FindAsync(id);
+            var aluno = await _context.Alunos.ToListAsync();
             if (turma == null)
             {
                 return NotFound();
             }
 
-            if (turma.Alunos.Count > 0)
-            {                
-                return NoContent();
+            foreach(Aluno alunos in aluno)
+            {
+                if(turma.Id == alunos.Id)
+                {
+                    return Content("Turma não pode ser deletada");
+                }
             }
+            
             _context.Turmas.Remove(turma);
             await _context.SaveChangesAsync();
             return NoContent();

@@ -8,6 +8,5 @@
         public char Sexo { get; set; }
         public int? TotalFaltas { get; set; }
         public int TurmaId { get; set; }
-        public virtual Turma Turma { internal get; set; }        
     }
 }

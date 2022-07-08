@@ -11,5 +11,6 @@
     <WebStackScaffolding_DbContextTypeFullName>escola.Models.EscolaContext</WebStackScaffolding_DbContextTypeFullName>
     <WebStackScaffolding_IsAsyncSelected>False</WebStackScaffolding_IsAsyncSelected>
     <WebStackScaffolding_DbContextDialogWidth>650</WebStackScaffolding_DbContextDialogWidth>
+    <NameOfLastUsedPublishProfile>C:\Users\maria\Documents\Blue EdTech - RDI - C#\escola\Properties\PublishProfiles\escola20220707233702 - Zip Deploy.pubxml</NameOfLastUsedPublishProfile>
   </PropertyGroup>
 </Project>

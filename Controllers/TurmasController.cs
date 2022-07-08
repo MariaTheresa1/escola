@@ -87,7 +87,7 @@ namespace escola.Controllers
         {
           if (_context.Turmas == null)
           {
-              return Problem("Entity set 'EscolaContext.Turmas'  is null.");
+              return Problem("Nenhuma turma foi informada.");
           }
             _context.Turmas.Add(turma);
             await _context.SaveChangesAsync();
@@ -109,9 +109,12 @@ namespace escola.Controllers
                 return NotFound();
             }
 
+            if (turma.Alunos.Count > 0)
+            {                
+                return NoContent();
+            }
             _context.Turmas.Remove(turma);
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
